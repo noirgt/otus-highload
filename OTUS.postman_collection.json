@@ -101,6 +101,70 @@
 			"response": []
 		},
 		{
+			"name": "Search users",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/user/search?first_name=Александра&last_name=Токарева",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"user",
+						"search"
+					],
+					"query": [
+						{
+							"key": "first_name",
+							"value": "Александра",
+							"description": "Имя"
+						},
+						{
+							"key": "last_name",
+							"value": "Токарева",
+							"description": "Фамилия"
+						}
+					]
+				},
+				"description": "Метод для поиска анкет пользователей по их именам и фамилиям. `first_name` и `last_name` можно указывать не целиком, а использовать префикс или окончание строки, чтобы расширить результат поиска."
+			},
+			"response": []
+		},
+		{
 			"name": "Create user",
 			"event": [
 				{

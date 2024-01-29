@@ -85,12 +85,31 @@ class DeleteUser(Resource):
         del user.user_uid
         return user.user_map, 200
 
+class FindUser(Resource):
+    @auth.login_required
+    def get(self):
+        fname = request.args.get('first_name', '')
+        lname = request.args.get('last_name', '')
+        if len(fname) < 3 > len(lname):
+            return "Length must be more than three characters", 400
+
+        user = Users()
+        print(fname, lname)
+        user.user_first_name = fname
+        user.user_last_name = lname
+        found_users = user.user_find
+        if found_users:
+            response = jsonify(found_users)
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return make_response(response, 200)
+        return "Users not found", 404
 
 api.add_resource(LoginUser, "/login")
 api.add_resource(CreateUser, "/user/register")
 api.add_resource(ShowUser, "/user/get/<int:id>")
 api.add_resource(DeleteUser, "/user/delete/<int:id>")
+api.add_resource(FindUser, "/user/search")
 
 if __name__ == '__main__':
     db_create()
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=5000)

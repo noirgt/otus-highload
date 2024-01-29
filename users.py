@@ -1,9 +1,11 @@
-from db.db_actions import db_setter, db_getter, db_deleter, db_token, db_check_token
+from db.db_actions import db_setter, db_getter, db_deleter, db_token, db_check_token, db_finder
 
 class Users:
     def __init__(self):
         self._user_map = {}
         self._user_uid = ""
+        self._user_first_name = ""
+        self._user_last_name = ""
         self._user_token = ""
         self._user_valid_token = False
 
@@ -37,6 +39,8 @@ class Users:
         new_user_map['uid'] = uid
         self._user_map = new_user_map
         self._user_uid = uid
+        self._user_first_name = new_user_map['first_name']
+        self._user_last_name = new_user_map['last_name']
 
     @property
     def user_uid(self):
@@ -51,6 +55,7 @@ class Users:
         db_deleter(self._user_uid)
         self._user_uid = ""
 
+    # Token
     @property
     def user_token(self):
         return self._user_token
@@ -67,3 +72,25 @@ class Users:
     @user_valid_token.setter
     def user_valid_token(self, user_token):
         self._user_valid_token = db_check_token(user_token)
+
+    # Find user by name
+    @property
+    def user_first_name(self):
+        return self._user_first_name
+
+    @user_first_name.setter
+    def user_first_name(self, user_first_name):
+        self._user_first_name = user_first_name
+
+    @property
+    def user_last_name(self):
+        return self._user_last_name
+
+    @user_last_name.setter
+    def user_last_name(self, user_last_name):
+        self._user_last_name = user_last_name
+
+    @property
+    def user_find(self):
+        get_user = db_finder(self._user_first_name, self._user_last_name)
+        return get_user

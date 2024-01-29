@@ -111,3 +111,29 @@ def db_check_token(user_token, conn):
     result = cursor.fetchone()
     
     return result[0]
+
+
+
+@connector
+def db_finder(first_name, last_name, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+    first_name = "%" + first_name + "%"
+    last_name = "%" + last_name + "%"
+
+    query = """
+        SELECT users.id as uid, first_name, last_name, cities.name as city,
+        sex.name as sex, age, hobbie
+        FROM users
+        INNER JOIN cities ON users.city_id = cities.id
+        INNER JOIN sex ON users.sex_id = sex.id
+        WHERE first_name LIKE %s and last_name  LIKE %s;
+    """
+    cursor.execute(query, (first_name, last_name))
+
+    # Получение результатов
+    result = cursor.fetchall()
+
+    # Закрытие соединения
+    cursor.close()
+    return result
