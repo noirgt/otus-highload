@@ -51,6 +51,7 @@ def db_setter(first_name, last_name, city_name,
 
     # Закрытие соединения
     cursor.close()
+
     return last_inserted_id
 
 
@@ -75,6 +76,7 @@ def db_getter(user_id, conn):
 
     # Закрытие соединения
     cursor.close()
+
     return result
 
 
@@ -88,6 +90,7 @@ def db_deleter(user_id, conn):
     conn.commit()
     # Закрытие соединения
     cursor.close()
+
     return
 
 
@@ -98,18 +101,22 @@ def db_token(user_id, user_password, conn):
     query = "SELECT token FROM users WHERE id = %s AND password = %s;"
     cursor.execute(query, (user_id, user_password))
     result = cursor.fetchone()
-    
+    # Закрытие соединения
+    cursor.close()
+
     return result[0]
 
 
 
 @connector
 def db_check_token(user_token, conn):
-    cursor = conn.cursor()
+    cursor = conn.cursor(buffered=True)
     query = "SELECT token FROM users WHERE token = %s;"
     cursor.execute(query, (user_token,))
     result = cursor.fetchone()
-    
+    # Закрытие соединения
+    cursor.close()
+
     return result[0]
 
 
@@ -118,8 +125,8 @@ def db_check_token(user_token, conn):
 def db_finder(first_name, last_name, conn):
     # Создание объекта cursor
     cursor = conn.cursor()
-    first_name = "%" + first_name + "%"
-    last_name = "%" + last_name + "%"
+    first_name = first_name + "%"
+    last_name = last_name + "%"
 
     query = """
         SELECT users.id as uid, first_name, last_name, cities.name as city,
@@ -136,4 +143,5 @@ def db_finder(first_name, last_name, conn):
 
     # Закрытие соединения
     cursor.close()
+
     return result
