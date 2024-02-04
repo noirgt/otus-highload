@@ -1,6 +1,5 @@
 FROM alpine:3.19.0
 
-
 WORKDIR /server
 COPY requirements.txt ./requirements.txt
 
@@ -18,4 +17,5 @@ RUN apk --update add \
     && rm -rf /var/cache/apk/*
 
 COPY . .
-CMD [ "python3", "./app.py" ]
+ENV GUNICORN_WORKERS 4
+CMD ["sh", "-c", "python3 migrations.py && gunicorn -w ${GUNICORN_WORKERS} --bind 0.0.0.0:5000 wsgi:app"]
