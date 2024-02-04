@@ -3,7 +3,6 @@ from flask_restful import Api, Resource, reqparse
 from flask_httpauth import HTTPTokenAuth
 import configuration
 from users import Users
-from db.db_tables import db_create
 import secrets
 
 app = Flask(__name__)
@@ -17,6 +16,11 @@ def verify_token(token):
     user.user_valid_token = token
     return bool(user.user_valid_token
                 ) or token == configuration.ADMIN_TOKEN
+
+class GetHealth(Resource):
+    @auth.login_required
+    def get(self):
+        return "OK", 200
 
 class LoginUser(Resource):
     def post(self):
@@ -104,6 +108,7 @@ class FindUser(Resource):
             return make_response(response, 200)
         return "Users not found", 404
 
+api.add_resource(GetHealth, "/health")
 api.add_resource(LoginUser, "/login")
 api.add_resource(CreateUser, "/user/register")
 api.add_resource(ShowUser, "/user/get/<int:id>")
@@ -111,5 +116,4 @@ api.add_resource(DeleteUser, "/user/delete/<int:id>")
 api.add_resource(FindUser, "/user/search")
 
 if __name__ == '__main__':
-    db_create()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8000)
