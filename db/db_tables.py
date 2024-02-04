@@ -48,4 +48,3 @@ def db_create(conn):
     # Применение изменений и закрытие соединения
     conn.commit()
     cursor.close()
-    conn.close()
