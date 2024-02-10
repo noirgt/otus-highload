@@ -2,7 +2,7 @@ from db.db_connector import connector
 
 
 
-@connector
+@connector(["master"])
 def db_setter(first_name, last_name, city_name,
                 sex_value, age, hobbie,
                 password, token, conn):
@@ -56,7 +56,7 @@ def db_setter(first_name, last_name, city_name,
 
 
 
-@connector
+@connector(["slave"])
 def db_getter(user_id, conn):
     # Создание объекта cursor
     cursor = conn.cursor()
@@ -81,7 +81,7 @@ def db_getter(user_id, conn):
 
 
 
-@connector
+@connector(["master"])
 def db_deleter(user_id, conn):
     cursor = conn.cursor()
     query = "DELETE FROM users WHERE id = %s;"
@@ -95,7 +95,7 @@ def db_deleter(user_id, conn):
 
 
 
-@connector
+@connector(["master"])
 def db_token(user_id, user_password, conn):
     cursor = conn.cursor()
     query = "SELECT token FROM users WHERE id = %s AND password = %s;"
@@ -108,7 +108,7 @@ def db_token(user_id, user_password, conn):
 
 
 
-@connector
+@connector(["master"])
 def db_check_token(user_token, conn):
     cursor = conn.cursor(buffered=True)
     query = "SELECT token FROM users WHERE token = %s;"
@@ -121,7 +121,7 @@ def db_check_token(user_token, conn):
 
 
 
-@connector
+@connector(["slave"])
 def db_finder(first_name, last_name, conn):
     # Создание объекта cursor
     cursor = conn.cursor()
