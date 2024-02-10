@@ -12,6 +12,9 @@ services:
       --max_connections=1000
       --server_id=1
       --log_bin=mysql-bin
+      --plugin-load="semisync_master.so"
+      --rpl_semi_sync_master_enabled=1
+      --rpl_semi_sync_master_timeout=10000
     restart: always
     ports:
       - "3306:3306"
@@ -32,6 +35,8 @@ services:
       --relay-log=/var/lib/mysql/mysql-relay-bin
       --relay-log-index=/var/lib/mysql/mysql-relay-bin.index
       --read_only=1
+      --plugin-load="semisync_slave.so"
+      --rpl_semi_sync_slave_enabled=1
     restart: always
     ports:
       - "4306:3306"
@@ -52,6 +57,8 @@ services:
       --relay-log=/var/lib/mysql/mysql-relay-bin
       --relay-log-index=/var/lib/mysql/mysql-relay-bin.index
       --read_only=1
+      --plugin-load="semisync_slave.so"
+      --rpl_semi_sync_slave_enabled=1
     restart: always
     ports:
       - "5306:3306"
