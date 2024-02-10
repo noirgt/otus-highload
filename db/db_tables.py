@@ -2,7 +2,7 @@ from db.db_connector import connector
 
 
 
-@connector
+@connector(["master"])
 def db_create(conn):
     # Структура таблицы cities
     cities_table = """
