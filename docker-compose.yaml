@@ -36,6 +36,7 @@ services:
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
       - GUNICORN_WORKERS=150
+      - REDIS_SERVER=redis
     build:
       context: .
       dockerfile: Dockerfile
