@@ -63,7 +63,7 @@ def db_create(conn):
 
 
 
-def db_get_posts_redis():
+def db_set_posts_redis():
     r_redis = redis.StrictRedis(REDIS_SERVER)
     data = db_get_posts(0, 1000)
     r_redis.delete("all_posts")
