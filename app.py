@@ -108,12 +108,25 @@ class FindUser(Resource):
             return make_response(response, 200)
         return "Users not found", 404
 
+class UserPosts(Resource):
+    @auth.login_required
+    def get(self):
+        offset = int(request.args.get('offset', 0))
+        limit = int(request.args.get('limit', 10))
+        user = Users()
+        user.user_friend_posts = (offset, limit)
+        posts = user.user_friend_posts
+        response = jsonify(posts)
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return make_response(response, 200)
+
 api.add_resource(GetHealth, "/health")
 api.add_resource(LoginUser, "/login")
 api.add_resource(CreateUser, "/user/register")
 api.add_resource(ShowUser, "/user/get/<int:id>")
 api.add_resource(DeleteUser, "/user/delete/<int:id>")
 api.add_resource(FindUser, "/user/search")
+api.add_resource(UserPosts, "/post/feed")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)

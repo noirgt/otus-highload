@@ -1,4 +1,4 @@
-from db.db_actions import db_setter, db_getter, db_deleter, db_token, db_check_token, db_finder
+from db.db_actions import *
 
 class Users:
     def __init__(self):
@@ -8,6 +8,8 @@ class Users:
         self._user_last_name = ""
         self._user_token = ""
         self._user_valid_token = False
+        self._user_friend_posts_offset = 0
+        self._user_friend_posts_limit = 5
 
     @property
     def user_map(self):
@@ -94,3 +96,14 @@ class Users:
     def user_find(self):
         get_user = db_finder(self._user_first_name, self._user_last_name)
         return get_user
+
+    # Get posts of friends
+    @property
+    def user_friend_posts(self):
+        friend_posts = db_get_posts_redis(self._user_friend_posts_offset, self._user_friend_posts_limit)
+        return friend_posts
+
+    @user_friend_posts.setter
+    def user_friend_posts(self, page):
+        self._user_friend_posts_offset = page[0]
+        self._user_friend_posts_limit = page[1]

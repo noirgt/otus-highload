@@ -3,3 +3,4 @@ Flask-RESTful==0.3.10
 Flask-HTTPAuth==4.8.0
 mysql-connector-python==8.2.0
 gunicorn==21.2.0
+redis==5.0.1
