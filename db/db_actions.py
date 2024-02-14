@@ -1,4 +1,7 @@
 from db.db_connector import connector
+from configuration import REDIS_SERVER
+from ast import literal_eval
+import redis
 
 
 
@@ -56,7 +59,7 @@ def db_setter(first_name, last_name, city_name,
 
 
 
-@connector(["slave"])
+@connector(["master"])
 def db_getter(user_id, conn):
     # Создание объекта cursor
     cursor = conn.cursor()
@@ -121,7 +124,7 @@ def db_check_token(user_token, conn):
 
 
 
-@connector(["slave"])
+@connector(["master"])
 def db_finder(first_name, last_name, conn):
     # Создание объекта cursor
     cursor = conn.cursor()
@@ -145,3 +148,38 @@ def db_finder(first_name, last_name, conn):
     cursor.close()
 
     return result
+
+@connector(["master"])
+def db_get_posts(offset, limit, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        SELECT posts.id as post_id, users.first_name,
+        users.last_name, content
+        FROM posts
+        INNER JOIN users ON posts.id = users.id LIMIT %s OFFSET %s;
+    """
+    cursor.execute(query, (limit, offset))
+
+    # Получение результатов
+    result = cursor.fetchall()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result
+
+
+
+def db_get_posts_redis(offset, limit):
+    r2_redis = redis.StrictRedis(REDIS_SERVER)
+    l = r2_redis.lrange("all_posts", offset, limit)
+
+    posts = []
+    for post in l:
+        post = post.decode('utf-8')
+        post = literal_eval(post)
+        posts.append(post)
+
+    return posts

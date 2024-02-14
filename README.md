@@ -6,7 +6,7 @@
     MYSQL_USER=user
     MYSQL_PASSWORD=user_password
     ADMIN_TOKEN=mytoken
-
+    REDIS_SERVER=redis
     ```
 - Запустить docker compose, который активирует сборку и старт контейнера с API и экземпляр БД MySQL:
     ```bash

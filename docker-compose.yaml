@@ -10,58 +10,22 @@ services:
     command:
       --default-authentication-plugin=mysql_native_password
       --max_connections=1000
-      --server_id=1
-      --log_bin=mysql-bin
-      --plugin-load="semisync_master.so"
-      --rpl_semi_sync_master_enabled=1
-      --rpl_semi_sync_master_timeout=10000
     restart: always
     ports:
       - "3306:3306"
     networks:
       - websrv
 
-  db_slave:
-    env_file:
-      - .env
-    image: mysql:8.0
-    volumes:
-      - db_slave_data:/var/lib/mysql
-    command:
-      --default-authentication-plugin=mysql_native_password
-      --max_connections=1000
-      --server_id=2
-      --log_bin=mysql-bin
-      --relay-log=/var/lib/mysql/mysql-relay-bin
-      --relay-log-index=/var/lib/mysql/mysql-relay-bin.index
-      --read_only=1
-      --plugin-load="semisync_slave.so"
-      --rpl_semi_sync_slave_enabled=1
+  redis:
+    image: redis:latest
     restart: always
     ports:
-      - "4306:3306"
-    networks:
-      - websrv
-
-  db_slave_second:
+      - "6379:6379"
     env_file:
       - .env
-    image: mysql:8.0
-    volumes:
-      - db_slave_second_data:/var/lib/mysql
-    command:
-      --default-authentication-plugin=mysql_native_password
-      --max_connections=1000
-      --server_id=3
-      --log_bin=mysql-bin
-      --relay-log=/var/lib/mysql/mysql-relay-bin
-      --relay-log-index=/var/lib/mysql/mysql-relay-bin.index
-      --read_only=1
-      --plugin-load="semisync_slave.so"
-      --rpl_semi_sync_slave_enabled=1
-    restart: always
-    ports:
-      - "5306:3306"
+    environment:
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
     networks:
       - websrv
 
@@ -70,10 +34,9 @@ services:
       - .env
     environment:
       - MYSQL_HOST=db
-      - MYSQL_SLAVE_HOST=db_slave
-      - MYSQL_SLAVE_SECOND_HOST=db_slave_second
       - MYSQL_PORT=3306
       - GUNICORN_WORKERS=150
+      - REDIS_SERVER=redis
     build:
       context: .
       dockerfile: Dockerfile
@@ -82,8 +45,7 @@ services:
     restart: always
     depends_on:
       - db
-      - db_slave
-      - db_slave_second
+      - redis
     networks:
       - websrv
 
@@ -92,5 +54,3 @@ networks:
 
 volumes:
   db_data:
-  db_slave_data:
-  db_slave_second_data:
