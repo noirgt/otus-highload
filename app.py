@@ -187,13 +187,13 @@ class DeletePosts(Resource):
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return make_response(response, 200)
 
-api.add_resource(GetHealth, "/health") #
-api.add_resource(LoginUser, "/login") #
-api.add_resource(UserWhoami, "/user/whoami") #
-api.add_resource(CreateUser, "/user/register") #
-api.add_resource(ShowUser, "/user/get/<int:id>") #
-api.add_resource(DeleteUser, "/user/delete/<int:id>") #
-api.add_resource(FindUser, "/user/search") #
+api.add_resource(GetHealth, "/health")
+api.add_resource(LoginUser, "/login")
+api.add_resource(UserWhoami, "/user/whoami")
+api.add_resource(CreateUser, "/user/register")
+api.add_resource(ShowUser, "/user/get/<int:id>")
+api.add_resource(DeleteUser, "/user/delete/<int:id>")
+api.add_resource(FindUser, "/user/search")
 api.add_resource(CreatePosts, "/post/create")
 api.add_resource(ShowPosts, "/post/get/<int:id>")
 api.add_resource(DeletePosts, "/post/delete/<int:id>")
