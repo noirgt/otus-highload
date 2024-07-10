@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Friend's posts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center; /* Центрируем содержимое по горизонтали */
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            socket.emit('my_event'); // Посылаем запрос на сервер сразу после подключения
+        });
+
+        socket.on('update_table', function(data) {
+            updateTable(data);
+        });
+
+        function updateTable(data) {
+            var table = document.getElementById('data-table');
+            table.innerHTML = ''; // Очищаем таблицу
+
+            // Добавляем заголовки в таблицу
+            var thead = table.createTHead();
+            var row = thead.insertRow();
+            var headerCell1 = document.createElement("th");
+            var headerCell2 = document.createElement("th");
+            headerCell1.innerHTML = "Name";
+            headerCell2.innerHTML = "Post";
+            row.appendChild(headerCell1);
+            row.appendChild(headerCell2);
+
+            // Добавляем данные в таблицу
+            for (var key in data) {
+                var row = table.insertRow();
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                cell1.innerHTML = key;
+                cell2.innerHTML = data[key];
+            }
+        }
+
+        // Автоматически обновляем таблицу каждые 5 секунд
+        setInterval(function() {
+            socket.emit('my_event');
+        }, 5000); // Здесь можно указать интервал обновления в миллисекундах
+    </script>
+</head>
+<body>
+    <h1>Friend's posts</h1> <!-- Добавляем заголовок таблицы -->
+    <table id="data-table">
+        <!-- Заголовки таблицы будут добавлены динамически с помощью JavaScript -->
+    </table>
+</body>
+</html>
