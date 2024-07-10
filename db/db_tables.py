@@ -1,7 +1,4 @@
 from db.db_connector import connector
-from db.db_actions import db_get_posts
-from configuration import REDIS_SERVER
-import redis
 
 
 
@@ -43,9 +40,21 @@ def db_create(conn):
     # Структура таблицы posts
     posts_table = """
     CREATE TABLE IF NOT EXISTS posts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id INT NOT NULL,
         content TEXT NOT NULL,
+        content_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
         FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE NO ACTION
+    )
+    """
+
+    # Структура таблицы followers
+    followers_table = """
+    CREATE TABLE IF NOT EXISTS followers (
+        id INT NOT NULL,
+        subscription INT NOT NULL,
+        FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE NO ACTION,
+        FOREIGN KEY (subscription) REFERENCES users(id) ON DELETE CASCADE ON UPDATE NO ACTION,
+        UNIQUE (id, subscription)
     )
     """
 
@@ -54,19 +63,9 @@ def db_create(conn):
 
     # Создание таблиц, если они еще не существуют
     for table in (cities_table, sex_table,
-                  users_table, posts_table):
+                  users_table, posts_table, followers_table):
         cursor.execute(table)
 
     # Применение изменений и закрытие соединения
     conn.commit()
     cursor.close()
-
-
-
-def db_set_posts_redis():
-    r_redis = redis.StrictRedis(REDIS_SERVER)
-    data = db_get_posts(0, 1000)
-    r_redis.delete("all_posts")
-    for row in data:
-         print(row)
-         r_redis.rpush("all_posts", str(row))
