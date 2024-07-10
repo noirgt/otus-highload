@@ -2,3 +2,4 @@ __pycache__
 .env
 kubernetes
 docker-compose-copy.yaml
+venv
