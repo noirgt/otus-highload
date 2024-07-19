@@ -187,6 +187,27 @@ class DeletePosts(Resource):
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return make_response(response, 200)
 
+class SetDialogs(Resource):
+    @auth.login_required
+    def post(self, id):
+        parser = reqparse.RequestParser()
+        parser.add_argument("text") 
+        params = parser.parse_args()
+        user.user_uid = id
+        user.user_dialogs = params['text']
+
+        response = jsonify({'user_id': id, 'text': params['text']})
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return make_response(response, 201)
+
+class GetDialogs(Resource):
+    @auth.login_required
+    def get(self, id):
+        user.user_uid = id
+        response = jsonify(user.user_dialogs)
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return make_response(response, 200)
+
 api.add_resource(GetHealth, "/health")
 api.add_resource(LoginUser, "/login")
 api.add_resource(UserWhoami, "/user/whoami")
@@ -201,6 +222,8 @@ api.add_resource(UserPosts, "/post/feed")
 api.add_resource(GetFriends, "/friend/get")
 api.add_resource(SetFriends, "/friend/set/<int:id>")
 api.add_resource(DelFriends, "/friend/delete/<int:id>")
+api.add_resource(SetDialogs, "/dialog/<int:id>/send")
+api.add_resource(GetDialogs, "/dialog/<int:id>/list")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)

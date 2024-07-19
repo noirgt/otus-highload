@@ -19,7 +19,7 @@ def pooller(db_server):
         all_pools = {}
 
     pool = mysql.connector.pooling.MySQLConnectionPool(
-        pool_name=db_server, pool_size=10, **dbconfig)
+        pool_name=db_server, pool_size=3, **dbconfig)
     all_pools[db_server] = pool
     return pool
 

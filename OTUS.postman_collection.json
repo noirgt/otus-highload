@@ -551,6 +551,75 @@
 				"description": "Метод для отписки текущего пользователя от других пользователей по их идентификаторам."
 			},
 			"response": []
+		},
+		{
+			"name": "Set dialogs",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"text\": \"{{dialog_content}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/dialog/{{user_uid}}/send",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"dialog",
+						"{{user_uid}}",
+						"send"
+					]
+				},
+				"description": "Метод для отправки диалога пользователю по его идентификатору."
+			},
+			"response": []
+		},
+		{
+			"name": "Get dialogs",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/dialog/{{user_uid}}/list",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"dialog",
+						"{{user_uid}}",
+						"list"
+					]
+				},
+				"description": "Метод для просмотра всех диалогов пользователя по его идентификатору."
+			},
+			"response": []
 		}
 	],
 	"event": [
