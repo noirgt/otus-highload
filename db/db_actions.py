@@ -1,7 +1,5 @@
-from db.db_connector import connector
-from configuration import REDIS_SERVER
-from ast import literal_eval
-import redis
+from db.db_connector import connector, redis_connector, rmq_connector
+import json
 
 
 
@@ -149,18 +147,68 @@ def db_finder(first_name, last_name, conn):
 
     return result
 
+
+
 @connector(["master"])
-def db_get_posts(offset, limit, conn):
+def db_set_posts(user_my_id, content, conn):
     # Создание объекта cursor
     cursor = conn.cursor()
 
     query = """
-        SELECT posts.id as post_id, users.first_name,
+        INSERT INTO posts (id, content)
+        VALUES
+        (%s, %s);
+    """
+    cursor.execute(query, (user_my_id, content))
+    conn.commit()
+
+    query = """
+        SELECT content_id FROM posts
+        WHERE id = %s AND content = %s
+        ORDER BY content_id DESC LIMIT 1;
+    """
+    cursor.execute(query, (user_my_id, content))
+
+    # Получение результатов
+    result = cursor.fetchone()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result[0]
+
+
+
+@connector(["master"])
+def db_del_posts(user_my_id, content_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        DELETE FROM posts 
+        WHERE id = %s AND content_id = %s;
+    """
+    cursor.execute(query, (user_my_id, content_id))
+
+    # Закрытие соединения
+    conn.commit()
+    cursor.close()
+
+
+
+@connector(["master"])
+def db_get_posts(content_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        SELECT posts.content_id as post_id, users.first_name,
         users.last_name, content
         FROM posts
-        INNER JOIN users ON posts.id = users.id LIMIT %s OFFSET %s;
+        INNER JOIN users ON posts.id = users.id
+        WHERE content_id = %s;
     """
-    cursor.execute(query, (limit, offset))
+    cursor.execute(query, (content_id,))
 
     # Получение результатов
     result = cursor.fetchall()
@@ -172,14 +220,165 @@ def db_get_posts(offset, limit, conn):
 
 
 
-def db_get_posts_redis(offset, limit):
-    r2_redis = redis.StrictRedis(REDIS_SERVER)
-    l = r2_redis.lrange("all_posts", offset, limit)
+@connector(["master"])
+def db_get_all_posts(offset, limit, user_my_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
 
-    posts = []
-    for post in l:
-        post = post.decode('utf-8')
-        post = literal_eval(post)
-        posts.append(post)
+    query = """
+        SELECT posts.content_id as post_id, users.first_name,
+        users.last_name, content
+        FROM posts
+        INNER JOIN users ON posts.id = users.id
+        WHERE users.id IN (SELECT subscription FROM followers WHERE id = %s)
+        LIMIT %s OFFSET %s;
+    """
+    cursor.execute(query, (user_my_id, limit, offset,))
 
-    return posts
+    # Получение результатов
+    result = cursor.fetchall()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result
+
+
+
+@connector(["master"])
+def db_get_my_user_id(token, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        SELECT id FROM users WHERE token = %s;
+    """
+    cursor.execute(query, (token,))
+
+    # Получение результатов
+    result = cursor.fetchone()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result[0]
+
+
+
+@connector(["master"])
+def db_set_followers(user_my_id, subscription_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        INSERT INTO followers (id, subscription)
+        VALUES
+        (%s, %s);
+    """
+    cursor.execute(query, (user_my_id, subscription_id))
+
+    # Закрытие соединения
+    conn.commit()
+    cursor.close()
+
+
+
+@connector(["master"])
+def db_del_followers(user_my_id, subscription_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        DELETE FROM followers
+        WHERE id = %s AND subscription = %s;
+    """
+    cursor.execute(query, (user_my_id, subscription_id))
+
+    # Закрытие соединения
+    conn.commit()
+    cursor.close()
+
+
+
+@connector(["master"])
+def db_get_followers(user_my_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        SELECT users.id, users.first_name, users.last_name
+        FROM followers
+        INNER JOIN users ON followers.subscription = users.id
+        WHERE followers.id = %s;
+    """
+    cursor.execute(query, (user_my_id,))
+
+    # Получение результатов
+    result = cursor.fetchall()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result
+
+
+
+@connector(["master"])
+def db_get_my_followers_ids(user_my_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        SELECT id FROM followers WHERE subscription = %s;
+    """
+    cursor.execute(query, (user_my_id,))
+
+    # Получение результатов
+    result = cursor.fetchall()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result
+
+
+@redis_connector
+def db_set_posts_redis(offset, limit, user_my_id, conn, ttl=60):
+    key_name  = str(hash((offset, limit, user_my_id)))
+    data = db_get_all_posts(offset, limit, user_my_id)
+    data = json.dumps(data)
+    conn.setex(key_name, ttl, data)
+    return data
+
+
+@redis_connector
+def db_get_posts_redis(offset, limit, user_my_id, conn):
+    key_name = str(hash((offset, limit, user_my_id)))
+
+    data = conn.get(key_name)
+    if not data:
+        data = db_set_posts_redis(offset, limit, user_my_id)
+    return json.loads(data)
+
+
+@rmq_connector()
+def db_set_posts_rmq(user_my_id, content, post_id, channel):
+    my_user_info = db_getter(user_my_id)[0]
+    my_user_first_name = my_user_info[1]
+    my_user_last_name =  my_user_info[2]
+    my_followers_ids = db_get_my_followers_ids(user_my_id)
+
+    for follower_id in my_followers_ids:
+        message = {
+            "first_name": my_user_first_name,
+            "last_name": my_user_last_name,
+            "content": content,
+            "post_id": post_id
+        }
+        message = json.dumps(message)
+        routing_key = str(follower_id[0])
+
+        channel.basic_publish(
+            exchange='friend_posts', routing_key=routing_key, body=message)
+
+        print(f"RMQ [x] Sent {message}")

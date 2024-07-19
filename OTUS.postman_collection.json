@@ -8,6 +8,34 @@
 	},
 	"item": [
 		{
+			"name": "Health",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Метод для проверки доступности сервиса."
+			},
+			"response": []
+		},
+		{
 			"name": "Login",
 			"event": [
 				{
@@ -44,6 +72,35 @@
 					]
 				},
 				"description": "Метод для авторизации. Позволяет получить токен по ID и паролю пользователя."
+			},
+			"response": []
+		},
+		{
+			"name": "Get whoami",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/user/whoami",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"user",
+						"whoami"
+					]
+				},
+				"description": "Метод для получения идентификатора текущего пользователя по его токену."
 			},
 			"response": []
 		},
@@ -266,6 +323,232 @@
 					]
 				},
 				"description": "Метод для удаления анкеты пользователя по его ID."
+			},
+			"response": []
+		},
+		{
+			"name": "Create posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"text\": \"{{post_content}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/post/create",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"post",
+						"create"
+					]
+				},
+				"description": "Метод для создания текстовых постов."
+			},
+			"response": []
+		},
+		{
+			"name": "Show posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/post/get/{{post_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"post",
+						"get",
+						"{{post_id}}"
+					]
+				},
+				"description": "Метод для просмотра содержимого постов по их идентификаторам."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/post/delete/{{post_del_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"post",
+						"delete",
+						"{{post_del_id}}"
+					]
+				},
+				"description": "Метод для удаления постов по их идентификаторам."
+			},
+			"response": []
+		},
+		{
+			"name": "Get my posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/post/feed?offset=0&limit=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"post",
+						"feed"
+					],
+					"query": [
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Метод просмотра постов текущего пользователя с заданными `offset` и `limit`."
+			},
+			"response": []
+		},
+		{
+			"name": "Get my friends",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/friend/get",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"friend",
+						"get"
+					]
+				},
+				"description": "Метод для получения идентификаторов пользователей, на которых подписан текущий пользователь."
+			},
+			"response": []
+		},
+		{
+			"name": "Set my friends",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/friend/set/{{friend_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"friend",
+						"set",
+						"{{friend_id}}"
+					]
+				},
+				"description": "Метод для подписки текущего пользователя на других пользователей по их идентификаторам."
+			},
+			"response": []
+		},
+		{
+			"name": "Del my friends",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/friend/delete/{{friend_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"friend",
+						"delete",
+						"{{friend_id}}"
+					]
+				},
+				"description": "Метод для отписки текущего пользователя от других пользователей по их идентификаторам."
 			},
 			"response": []
 		}

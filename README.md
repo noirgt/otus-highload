@@ -7,6 +7,13 @@
     MYSQL_PASSWORD=user_password
     ADMIN_TOKEN=mytoken
     REDIS_SERVER=redis
+    REDIS_SERVER=redis
+    REDIS_USER=default
+    REDIS_PASSWORD=default_password
+    RABBITMQ_SERVER=rabbitmq
+    RABBITMQ_DEFAULT_USER=rmq_username
+    RABBITMQ_DEFAULT_PASS=rmq_password
+
     ```
 - Запустить docker compose, который активирует сборку и старт контейнера с API и экземпляр БД MySQL:
     ```bash

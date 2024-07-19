@@ -2,11 +2,17 @@ from db.db_actions import *
 
 class Users:
     def __init__(self):
+        self._user_my_uid = ""
+        self._user_my_token = ""
+        self._user_my_posts = ""
+        self._user_my_posts_id = None
+        self._user_my_friends = None
+        self._user_my_del_friends = None
+
         self._user_map = {}
         self._user_uid = ""
         self._user_first_name = ""
         self._user_last_name = ""
-        self._user_token = ""
         self._user_valid_token = False
         self._user_friend_posts_offset = 0
         self._user_friend_posts_limit = 5
@@ -46,7 +52,7 @@ class Users:
 
     @property
     def user_uid(self):
-        return self._user_uid 
+        return self._user_uid
 
     @user_uid.setter
     def user_uid(self, user_uid):
@@ -57,6 +63,13 @@ class Users:
         db_deleter(self._user_uid)
         self._user_uid = ""
 
+    @property
+    def user_my_uid(self):
+        self._user_my_uid = db_get_my_user_id(self._user_my_token)
+        if not self._user_my_uid:
+            self._user_my_uid = "0"
+        return self._user_my_uid
+
     # Token
     @property
     def user_token(self):
@@ -66,6 +79,15 @@ class Users:
     def user_token(self, user_password):
         self._user_token = db_token(self._user_uid, user_password)
         return self._user_token
+
+    @property
+    def user_my_token(self):
+        return self._user_my_token
+
+    @user_my_token.setter
+    def user_my_token(self, user_my_token):
+        self._user_my_token = user_my_token
+        return self._user_my_token
 
     @property
     def user_valid_token(self):
@@ -97,13 +119,59 @@ class Users:
         get_user = db_finder(self._user_first_name, self._user_last_name)
         return get_user
 
+    # Action for my posts
+    @property
+    def user_my_posts(self):
+        if not self._user_my_posts_id:
+            return self._user_my_posts
+
+        return db_get_posts(self._user_my_posts_id)
+
+    @user_my_posts.setter
+    def user_my_posts(self, text):
+        self._user_my_posts_id = db_set_posts(self.user_my_uid, text)
+        db_set_posts_rmq(self.user_my_uid, text, self._user_my_posts_id)
+
+    @property
+    def user_my_posts_id(self):
+        return self._user_my_posts_id
+
+    @user_my_posts_id.setter
+    def user_my_posts_id(self, post_id):
+        self._user_my_posts_id = post_id
+
+    @user_my_posts_id.deleter
+    def user_my_posts_id(self):
+        db_del_posts(self.user_my_uid, self.user_my_posts_id)
+
     # Get posts of friends
     @property
     def user_friend_posts(self):
-        friend_posts = db_get_posts_redis(self._user_friend_posts_offset, self._user_friend_posts_limit)
+        friend_posts = db_get_posts_redis(self._user_friend_posts_offset, self._user_friend_posts_limit, self.user_my_uid)
         return friend_posts
 
     @user_friend_posts.setter
     def user_friend_posts(self, page):
         self._user_friend_posts_offset = page[0]
         self._user_friend_posts_limit = page[1]
+
+    @property
+    def user_my_friends(self):
+        my_friends = db_get_followers(self.user_my_uid)
+        return my_friends
+
+    @user_my_friends.setter
+    def user_my_friends(self, user_my_friends):
+        db_set_followers(self.user_my_uid, user_my_friends)
+
+    @property
+    def user_my_del_friends(self):
+        return self._user_my_del_friends
+
+    @user_my_del_friends.setter
+    def user_my_del_friends(self, user_my_del_friends):
+        self._user_my_del_friends = user_my_del_friends
+
+    @user_my_del_friends.deleter
+    def user_my_del_friends(self):
+        db_del_followers(self.user_my_uid, self._user_my_del_friends)

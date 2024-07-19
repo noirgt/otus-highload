@@ -1,6 +1,21 @@
 version: '3.3'
 
 services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entryPoints.web.address=:80
+    ports:
+      - 8000:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - websrv
+
   db:
     env_file:
       - .env
@@ -19,6 +34,10 @@ services:
   redis:
     image: redis:latest
     restart: always
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
     ports:
       - "6379:6379"
     env_file:
@@ -26,6 +45,16 @@ services:
     environment:
       - REDIS_PORT=6379
       - REDIS_DATABASES=16
+    networks:
+      - websrv
+
+  rabbitmq:
+    image: rabbitmq:3.13.4-management
+    restart: always
+    ports:
+      - "5672:5672"
+    env_file:
+      - .env
     networks:
       - websrv
 
@@ -37,15 +66,48 @@ services:
       - MYSQL_PORT=3306
       - GUNICORN_WORKERS=150
       - REDIS_SERVER=redis
+      - RABBITMQ_SERVER=rabbitmq
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:5000"
+    image: otus-highload:latest
     restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.services.web.loadbalancer.server.port=5000"
     depends_on:
       - db
       - redis
+    networks:
+      - websrv
+
+  websocketapp:
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - GUNICORN_WORKERS=150
+      - REDIS_SERVER=redis
+      - RABBITMQ_SERVER=rabbitmq
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: otus-highload:latest
+    restart: always
+    command:
+      - python3
+      - app-socket-rmq.py
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.posts.rule=Path(`/post/feed/posted`) || PathPrefix(`/socket.io`)"
+      - "traefik.http.routers.posts.entrypoints=web"
+      - "traefik.http.services.posts.loadbalancer.server.port=1240"
+    depends_on:
+      - db
+      - redis
+      - webapp
     networks:
       - websrv
 
