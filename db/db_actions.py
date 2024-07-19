@@ -342,6 +342,45 @@ def db_get_my_followers_ids(user_my_id, conn):
     return result
 
 
+
+@connector(["master"])
+def db_set_dialogs(user_id, text, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        INSERT INTO dialogs (user_id, dialog)
+        VALUES
+        (%s, %s);
+    """
+    cursor.execute(query, (user_id, text))
+
+    # Закрытие соединения
+    conn.commit()
+    cursor.close()
+
+
+
+@connector(["master"])
+def db_get_dialogs(user_id, conn):
+    # Создание объекта cursor
+    cursor = conn.cursor()
+
+    query = """
+        SELECT * FROM dialogs WHERE user_id = %s;
+    """
+    cursor.execute(query, (user_id,))
+
+    # Получение результатов
+    result = cursor.fetchall()
+
+    # Закрытие соединения
+    cursor.close()
+
+    return result
+
+
+
 @redis_connector
 def db_set_posts_redis(offset, limit, user_my_id, conn, ttl=60):
     key_name  = str(hash((offset, limit, user_my_id)))

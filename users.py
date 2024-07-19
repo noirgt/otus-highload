@@ -16,6 +16,7 @@ class Users:
         self._user_valid_token = False
         self._user_friend_posts_offset = 0
         self._user_friend_posts_limit = 5
+        self._user_dialogs = []
 
     @property
     def user_map(self):
@@ -118,6 +119,15 @@ class Users:
     def user_find(self):
         get_user = db_finder(self._user_first_name, self._user_last_name)
         return get_user
+
+    # Action for user dialogs
+    @property
+    def user_dialogs(self):
+        return db_get_dialogs(self._user_uid)
+
+    @user_dialogs.setter
+    def user_dialogs(self, text):
+        db_set_dialogs(self._user_uid, text)
 
     # Action for my posts
     @property
