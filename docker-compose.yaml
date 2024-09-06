@@ -3,7 +3,6 @@ version: '3.3'
 services:
   traefik:
     image: traefik:v3.0
-    container_name: traefik
     command:
       - --api.insecure=true
       - --providers.docker=true
@@ -13,6 +12,22 @@ services:
       - 8000:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - websrv
+
+  tarantool:
+    build:
+      context: .
+      dockerfile: tarantool/Dockerfile
+    volumes:
+      - tarantool_data:/var/lib/tarantool
+    ports:
+      - 3301:3301
+      - 8085:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tarantool.rule=PathPrefix(`/dialog`)"
+      - "traefik.http.services.tarantool.loadbalancer.server.port=8080"
     networks:
       - websrv
 
@@ -71,6 +86,8 @@ services:
       context: .
       dockerfile: Dockerfile
     image: otus-highload:latest
+    ports:
+      - 5000:5000
     restart: always
     labels:
       - "traefik.enable=true"
@@ -116,3 +133,4 @@ networks:
 
 volumes:
   db_data:
+  tarantool_data:

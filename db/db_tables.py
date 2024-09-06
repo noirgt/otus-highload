@@ -58,6 +58,15 @@ def db_create(conn):
     )
     """
 
+    # Структура таблицы dialogs
+    dialogs_table = """
+    CREATE TABLE IF NOT EXISTS dialogs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        dialog TEXT NOT NULL
+    )
+    """
+
     # Подключение к базе данных
     cursor = conn.cursor()
 
